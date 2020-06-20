@@ -1,0 +1,44 @@
+Ansible Check Mode or Dry Run: 
+ex:
+---
+- hosts: all
+  tasks:
+  - yum:
+     name: httpd
+	 state: latest
+ansible-playbook playbook.yml --check
+===========================================
+Start at:
+ex:
+---
+- hosts: all
+  tasks:
+  - name: Install htppd
+    yum:
+     name: httpd
+	 state: latest
+  - name: Start htppd service
+    service:
+     name: httpd
+	 state: started
+
+ansible-playbook playbook.yml --start-at-task "Start httpd service"
+===========================================================
+Start at:
+ex:
+---
+- hosts: all
+  tasks:
+  - name: Install htppd
+    yum:
+     name: httpd
+	 state: latest
+	tags:
+	  - httpd package
+  - name: Start htppd service
+    service:
+     name: httpd
+	 state: started
+
+ansible-playbook playbook.yml --tags "httpd package"
+===========================================================
