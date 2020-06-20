@@ -87,4 +87,51 @@ On Ansible controller node generate an SSH key with filename ansible under defau
 ssh-keygen -f ~/.ssh/ansible
 
 web1 ansible_host=172.20.1.100 ansible_ssh_private_key_file=~/.ssh/ansible ansible_user=ansible
+==============
+---
+- hosts: web2
+  gather_facts: false
+  tasks:
+    - shell: dpkg -l git
+      register: check_if_git_installed
+      ignore_errors: true
 
+    - debug: var=check_if_git_installed
+    - shell: echo 'Oops, git is missing' > /tmp/is_git_installed.txt
+      when: check_if_git_installed.rc != 0
+
+    - shell: git --version > /tmp/is_git_installed.txt
+      when: check_if_git_installed.rc == 0
+===============================================
+---
+- name: copy script if not present
+  gather_facts: yes
+  hosts: web2
+  vars:
+    remote_dest: /usr/local/bin/report_status.sh
+  tasks:
+    - copy:
+        src: report_status.sh
+        dest: "{{remote_dest}}"
+      when: copy_file_only_if is defined and copy_file_only_if|bool
+==================================================
+
+---
+- hosts: web2
+  gather_facts: no
+  vars:
+    remote_dest: /usr/local/bin/report_status.sh
+  tasks:
+    - stat:
+        path: "{{remote_dest}}"
+      register: file_status
+
+    - debug: var=file_status
+    - shell: echo "File report_status.sh is not executable, making it executable..." > /tmp/change.log
+      when: file_status.stat.exists and file_status.stat.executable == false
+
+    - name: Make the script executable
+      file:
+        path: "{{remote_dest}}"
+        mode: 0775
+===================================================
