@@ -135,3 +135,74 @@ web1 ansible_host=172.20.1.100 ansible_ssh_private_key_file=~/.ssh/ansible ansib
         path: "{{remote_dest}}"
         mode: 0775
 ===================================================
+---
+- hosts: web2
+  gather_facts: no
+  tasks:
+    - name: Run a script
+      shell: sh /usr/local/bin/report_status.sh
+      register: test
+    - debug:
+        var: test
+	
+=============================
+---
+- hosts: web2
+  gather_facts: no
+  tasks:
+    - name: install nginx
+      apt: name=nginx state=present
+      tags: [install_core]
+
+    - name: install extra packages
+      apt: name={{item}}
+      with_items: "{{extra_packages}}"
+      when: extra_packages is defined and extra_packages == "htop"
+      
+====================
+---
+- hosts: all
+  tasks:
+    - name: Install and configure httpd web server
+      when: ansible_facts['distribution'] == 'CentOS'
+      block:
+        - yum:
+            name: httpd
+            state: present
+        - service:
+            name: httpd
+            state: started
+=====================
+---
+- hosts: all
+  tasks:
+    - name: Create a file
+      block:
+        - file:
+            path: /tmp/file.txt
+            state: touch
+        - name: This will fail
+          command: /bin/false
+        - debug:
+            msg: "This will never run"
+      always:
+        - debug:
+            msg: "This task always runs!"
+
+-----------------------------
+---
+- hosts: all
+  tasks:
+    - name: Install and configure httpd web server
+      when: ansible_facts['distribution'] == 'CentOS'
+      block:
+        - yum:
+            name: httpd
+            state: present
+        - service:
+            name: httpd
+            state: started
+      rescue:
+        - debug:
+            msg: "Playbook has failed for {{ inventory_hostname }} node"
+==========================
