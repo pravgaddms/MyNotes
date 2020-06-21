@@ -1,0 +1,61 @@
+--- #playbook buildsetup.yml
+- hosts: demo
+  become: yes
+  roles:
+   - maven
+  ====================
+ #roles/maven/vars/main.yml
+---
+ maven_major: 3
+ maven_version: 3.5.4
+ maven_home_parent_directory: /home/downloads
+ maven_file_name: apache-maven-{{ maven_version }}-bin.tar.gz
+ maven_download_url: 'http://www.apache.org/dist/maven/maven-{{ maven_major }}/{{ maven_version }}/binaries/{{ maven_file_name }} 
+ 
+ apache-maven-3.5.4.tar.gz
+ =====================================
+ #roles/maven/tasks/main.yml
+---
+- name: Install JDK 1.8
+  apt: name=openjdk-8-jre-headless state=present
+- name: Install git
+  apt: name=git state=present
+- name: check & create download dir
+  file:
+   path: '{{ maven_home_parent_directory }}'
+   state: directory
+   mode: 0755
+- name: Check if maven is already installed
+  stat:
+   path: '{{ maven_home_parent_directory }}/apache-maven-{{ maven_version }}'
+  register: maven_installed
+- debug: var=maven_installed
+- name: download binaries
+  get_url:
+    url: '{{  maven_download_url }}'
+    dest: '{{ maven_home_parent_directory }}/{{ maven_file_name }}'
+  when: maven_installed.stat.exists != True
+- name: unarchive maven Binaries
+  unarchive:
+   src: '{{ maven_home_parent_directory }}/{{ maven_file_name }}'
+   dest: '{{ maven_home_parent_directory }}'
+   copy: no
+  when: maven_installed.stat.exists != True
+- name: Remove old path configuration
+  file:
+   path: /etc/profile.d/maven.sh
+   state: absent
+  when: maven_installed.stat.exists != True
+- name: Maven path Configuration
+  lineinfile:
+    dest: /etc/profile.d/maven.sh
+    line: '{{ item.line }}'
+    create: yes
+    state: present
+  with_items:
+   - { line: 'M2_HOME={{ maven_home_parent_directory}}/apache-maven-{{ maven_version }}' }
+   - { line: 'PATH=$PATH:$M2_HOME/bin' }
+- name: Remove old downladed binaryfile
+  file:
+   path: '{{ maven_home_parent_directory }}/{{ maven_file_name }}'
+   state: absent
