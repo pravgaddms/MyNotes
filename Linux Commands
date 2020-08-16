@@ -1,0 +1,65 @@
+sed -i '/^$/d' ==> Ways to remove empty lines in a file on Linux
+# awk 'NF > 0' main.txt > out.txt ==> Also can use AWK command line tool to remove blank lines from a file. 
+
+cat > MiT
+cutl -c1,7 MiT
+cutl -c1,7 MiTclr
+clear
+cut -c1,7 MiT
+cut -c1-7 MiT
+cut -c1-17 MiT
+man cut
+echo "One" > One
+echo "Two" > One
+echo "One" > One
+echo "Two" > Two
+cat t
+cat Two
+cat One
+mv One one
+mv Two two
+paste one two
+cat one
+paste -s one two
+man sort
+cat > names
+cat names
+sort names
+sort -r names
+sort -n names
+nl names
+nl names  > names1
+sort -n names
+sort -n names1
+sort -rn names1
+sort names1
+sort -oresult MiT names
+cat result
+cler
+clear
+ls -tlr
+rm result
+ls
+clear
+sort -oresult names MiT
+cat result
+man tee
+cal
+can |tee
+cal |tee
+cal |tee AuG16
+ls
+cat AuG16
+cat MiT
+cat MiT |wc -l
+cat MiT |wc -l |tee lines
+ls -tlr
+cat lines
+clear
+history
+cal
+cal |tee
+cal |tee Aug16
+cat Aug16
+rm AuG16
+ls -trl
